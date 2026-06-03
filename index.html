@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск по ТН ВЭД ЕАЭС — Единая таможенная классификация</title>
+    <style>
+        /* ===== СБРОС И БАЗОВЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #1a3a5c;
+            --color-primary-dark: #0f2440;
+            --color-primary-light: #2c5f8a;
+            --color-accent: #c9a84c;
+            --color-accent-dark: #a88a2e;
+            --color-bg: #f4f5f7;
+            --color-white: #ffffff;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #5a6577;
+            --color-border: #d1d5db;
+            --color-border-light: #e5e7eb;
+            --color-success: #2d7a4f;
+            --color-error: #b91c1c;
+            --color-warning: #92400e;
+            --font-main: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            background: var(--color-primary);
+            color: var(--color-white);
+            border-bottom: 3px solid var(--color-accent);
+        }
+
+        .header-top {
+            background: var(--color-primary-dark);
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .header-top .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-top a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+
+        .header-top a:hover {
+            color: var(--color-white);
+        }
+
+        .header-main {
+            padding: 20px 0;
+        }
+
+        .header-main .container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--color-accent);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--color-primary-dark);
+        }
+
+        .header-logo-text h1 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header-logo-text p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+
+        .header-nav {
+            margin-left: auto;
+            display: flex;
+            gap: 24px;
+        }
+
+        .header-nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 6px 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .header-nav a:hover,
+        .header-nav a.active {
+            color: var(--color-white);
+            border-bottom-color: var(--color-accent);
+        }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ===== ХЛЕБНЫЕ КРОШКИ ===== */
+        .breadcrumbs {
+            padding: 12px 0;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .breadcrumbs a {
+            color: var(--color-primary-light);
+            text-decoration: none;
+        }
+
+        .breadcrumbs a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumbs span {
+            margin: 0 8px;
+            color: var(--color-border);
+        }
+
+        /* ===== ПАНЕЛЬ СТАТИСТИКИ ===== */
+        .stats-panel {
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: 4px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stats-panel .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-panel .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stats-panel .stat-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .stats-panel .stat-divider {
+            width: 1px;
+            height: 32px;
+            background: var(--color-border-light);
+        }
+
+        .stats-panel .status-indicator {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--color-success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--color-success);
+            border-radius: 50%;
+        }
+
+        /* ===== ПОИСКОВАЯ ПАНЕЛЬ ===== */
+        .search-panel {
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-panel h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            font-size: 15px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: var(--font-main);
+        }
+
+        .search-input:focus {
+            border-color: var(--color-primary-light);
+            box-shadow: 0 0 0 3px rgba(44, 95, 138, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-secondary);
+            font-size: 18px;
+        }
+
+        .search-btn {
+            padding: 12px 28px;
+            background: var(--color-primary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background: var(--color-primary-light);
+        }
+
+        .search-hint {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        .search-hint code {
+            background: var(--color-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        /* ===== ФИЛЬТРЫ ===== */
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            background: var(--color-white);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--color-text);
+        }
+
+        .filter-chip:hover {
+            border-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .filter-chip.active {
+            background: var(--color-primary);
+            color: var(--color-white);
+            border-color: var(--color-primary);
+        }
+
+        /* ===== РЕЗУЛЬТАТЫ ===== */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .results-count strong {
+            color: var(--color-text);
+        }
+
+        .results-sort {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .results-sort select {
+            padding: 4px 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* Таблица результатов */
+        .results-table {
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .results-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table thead {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .results-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--color-primary-dark);
+        }
+
+        .results-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--color-border-light);
+            vertical-align: top;
+        }
+
+        .results-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f8f9fb;
+        }
+
+        .results-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .code-cell {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-primary);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .name-cell {
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        .hierarchy-cell {
+            font-size: 12px;
+        }
+
+        .hierarchy-path {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .hierarchy-tag {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tag-section {
+            background: #e8f0fe;
+            color: var(--color-primary);
+        }
+
+        .tag-group {
+            background: #fef3c7;
+            color: var(--color-warning);
+        }
+
+        .tag-category {
+            background: var(--color-bg);
+            color: var(--color-text-secondary);
+        }
+
+        .hierarchy-separator {
+            color: var(--color-border);
+            font-size: 10px;
+        }
+
+        .unit-cell {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+        }
+
+        .rate-cell {
+            font-weight: 600;
+            color: var(--color-primary);
+            font-size: 14px;
+        }
+
+        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
+        .empty-state {
+            background: var(--color-white);
+            border: 1px solid var(--color-border-light);
+            border-radius: 4px;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        /* ===== ОШИБКА ===== */
+        .error-state {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .error-state h3 {
+            color: var(--color-error);
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .error-state p {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        /* ===== ПОДВАЛ ===== */
+        .footer {
+            background: var(--color-primary-dark);
+            color: rgba(255,255,255,0.7);
+            padding: 32px 0;
+            margin-top: 48px;
+            border-top: 3px solid var(--color-accent);
+        }
+
+        .footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-left {
+            font-size: 13px;
+        }
+
+        .footer-right {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--color-white);
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading-overlay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-border);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            .header-nav { display: none; }
+            .header-logo-text h1 { font-size: 16px; }
+            .stats-panel { flex-wrap: wrap; gap: 16px; }
+            .search-form { flex-direction: column; }
+            .results-table { overflow-x: auto; }
+            .results-table table { min-width: 700px; }
+            .footer .container { flex-direction: column; text-align: center; }
+        }
+
+        /* ===== ПЕЧАТЬ ===== */
+        @media print {
+            .header, .footer, .search-panel, .filters-bar { display: none; }
+            .results-table { box-shadow: none; border: 1px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ШАПКА -->
+    <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <span>Единая таможенная классификация ЕАЭС</span>
+                <div>
+                    <a href="#">О сервисе</a> &nbsp;|&nbsp;
+                    <a href="#">Справка</a> &nbsp;|&nbsp;
+                    <a href="#">Обратная связь</a>
+                </div>
+            </div>
+        </div>
+        <div class="header-main">
+            <div class="container">
+                <div class="header-logo">
+                    <div class="header-logo-icon">ТН</div>
+                    <div class="header-logo-text">
+                        <h1>Поиск по ТН ВЭД ЕАЭС</h1>
+                        <p>Товарная номенклатура внешнеэкономической деятельности</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="#" class="active">Поиск</a>
+                    <a href="#">Разделы</a>
+                    <a href="#">Группы</a>
+                    <a href="#">Справка</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="container">
+
+        <!-- Хлебные крошки -->
+        <nav class="breadcrumbs">
+            <a href="#">Главная</a>
+            <span>›</span>
+            <a href="#">ТН ВЭД ЕАЭС</a>
+            <span>›</span>
+            Поиск по товарной номенклатуре
+        </nav>
+
+        <!-- Панель статистики -->
+        <div class="stats-panel" id="statsPanel">
+            <div class="stat-item">
+                <div class="loading-spinner"></div>
+                <span>Загрузка базы данных...</span>
+            </div>
+        </div>
+
+        <!-- Поисковая панель -->
+        <div class="search-panel">
+            <h2>Поиск по товарной номенклатуре</h2>
+            <div class="search-form">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="searchInput"
+                        placeholder="Введите наименование товара, код ТН ВЭД или ключевое слово..."
+                        autofocus
+                    >
+                </div>
+                <button class="search-btn" id="searchBtn">Найти</button>
+            </div>
+            <div class="search-hint">
+                Примеры запросов: <code>ослы</code>, <code>0101</code>, <code>молоко</code>, <code>пластмассы</code>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters-bar" id="filtersBar" style="display: none;">
+            <span class="filter-label">Фильтр по разделу:</span>
+            <div id="filterChips"></div>
+        </div>
+
+        <!-- Результаты -->
+        <div id="resultsContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h3>Введите запрос для поиска</h3>
+                <p>Используйте наименование товара или код ТН ВЭД</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ПОДВАЛ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-left">
+                © 2024 — Студенческий исследовательский проект.
+                Данные: <a href="https://eec.eaeunion.org" target="_blank">eec.eaeunion.org</a>
+            </div>
+            <div class="footer-right">
+                ТН ВЭД ЕАЭС — Товарная номенклатура внешнеэкономической деятельности
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ===== ДАННЫЕ =====
+        let tnvedDatabase = [];
+        let isDatabaseLoaded = false;
+        let activeFilter = null;
+
+        // ===== ЗАГРУЗКА БАЗЫ =====
+        async function loadDatabase() {
+            const statsPanel = document.getElementById('statsPanel');
+
+            try {
+                const response = await fetch('database.json');
+                if (!response.ok) throw new Error('Файл database.json не найден');
+
+                tnvedDatabase = await response.json();
+                isDatabaseLoaded = true;
+
+                // Подсчёт статистики
+                let totalPositions = 0;
+                const sections = new Set();
+                tnvedDatabase.forEach(item => {
+                    sections.add(item.section);
+                    if (item.subpositions) totalPositions += item.subpositions.length;
+                });
+
+                statsPanel.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-value">${tnvedDatabase.length}</div>
+                        <div class="stat-label">групп</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-value">${sections.size}</div>
+                        <div class="stat-label">разделов</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-value">~${totalPositions.toLocaleString('ru-RU')}</div>
+                        <div class="stat-label">позиций</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-value">2022</div>
+                        <div class="stat-label">редакция</div>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        База данных загружена
+                    </div>
+                `;
+
+                // Показать фильтры
+                showFilters(sections);
+
+            } catch (error) {
+                statsPanel.innerHTML = `
+                    <div class="error-state" style="margin: 0; width: 100%;">
+                        <h3>Ошибка загрузки базы данных</h3>
+                        <p>${error.message}. Убедитесь, что файл database.json находится рядом с index.html и сайт запущен через локальный сервер.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== ФИЛЬТРЫ =====
+        function showFilters(sections) {
+            const filtersBar = document.getElementById('filtersBar');
+            const filterChips = document.getElementById('filterChips');
+            filtersBar.style.display = 'flex';
+
+            const allChip = document.createElement('button');
+            allChip.className = 'filter-chip active';
+            allChip.textContent = 'Все разделы';
+            allChip.onclick = () => setFilter(null);
+            filterChips.appendChild(allChip);
+
+            sections.forEach(section => {
+                const chip = document.createElement('button');
+                chip.className = 'filter-chip';
+                chip.textContent = `Раздел ${section}`;
+                chip.onclick = () => setFilter(section);
+                filterChips.appendChild(chip);
+            });
+        }
+
+        function setFilter(section) {
+            activeFilter = section;
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const query = document.getElementById('searchInput').value;
+            if (query.length >= 2) {
+                performSearch(query);
+            }
+        }
+
+        // ===== ПОИСК =====
+        function searchTnved(query) {
+            if (!query || query.length < 2) return [];
+
+            const results = [];
+            const searchLower = query.toLowerCase();
+
+            function searchInPositions(positions, parent) {
+                if (!positions) return;
+
+                positions.forEach(pos => {
+                    const searchText = `${pos.name} ${pos.code}`.toLowerCase();
+
+                    if (searchText.includes(searchLower)) {
+                        results.push({
+                            section: parent.section,
+                            sectionName: parent.sectionName,
+                            group: parent.group,
+                            groupName: parent.groupName,
+                            code: pos.code,
+                            name: pos.name,
+                            unit: pos.unit || '',
+                            rate: pos.rate || ''
+                        });
+                    }
+
+                    if (pos.subpositions) {
+                        searchInPositions(pos.subpositions, parent);
+                    }
+                });
+            }
+
+            tnvedDatabase.forEach(item => {
+                // Фильтр по разделу
+                if (activeFilter && item.section !== activeFilter) return;
+
+                if (item.groupName && item.groupName.toLowerCase().includes(searchLower)) {
+                    results.push({
+                        section: item.section,
+                        sectionName: item.sectionName,
+                        group: item.group,
+                        groupName: item.groupName,
+                        code: '',
+                        name: item.groupName,
+                        unit: '',
+                        rate: ''
+                    });
+                }
+
+                if (item.subpositions) {
+                    searchInPositions(item.subpositions, item);
+                }
+
+                if (item.name && item.name.toLowerCase().includes(searchLower)) {
+                    results.push({
+                        section: item.section,
+                        sectionName: item.sectionName,
+                        group: item.group,
+                        groupName: item.groupName,
+                        code: item.code || '',
+                        name: item.name,
+                        unit: '',
+                        rate: ''
+                    });
+                }
+            });
+
+            return results;
+        }
+
+        // ===== ОТОБРАЖЕНИЕ РЕЗУЛЬТАТОВ =====
+        function performSearch(query) {
+            const results = searchTnved(query);
+            displayResults(results, query);
+        }
+
+        function displayResults(results, query) {
+            const container = document.getElementById('resultsContainer');
+
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3>Ничего не найдено</h3>
+                        <p>По запросу «${query}» результатов не обнаружено. Попробуйте изменить запрос.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const rows = results.map(r => `
+                <tr>
+                    <td class="code-cell">${r.code || '—'}</td>
+                    <td class="name-cell">${r.name}</td>
+                    <td class="hierarchy-cell">
+                        <div class="hierarchy-path">
+                            <span class="hierarchy-tag tag-section">Раздел ${r.section}</span>
+                            <span class="hierarchy-separator">›</span>
+                            <span class="hierarchy-tag tag-group">Гр. ${r.group}</span>
+                            <span class="hierarchy-separator">›</span>
+                            <span class="hierarchy-tag tag-category">${r.groupName}</span>
+                        </div>
+                    </td>
+                    <td class="unit-cell">${r.unit || '—'}</td>
+                    <td class="rate-cell">${r.rate ? r.rate + '%' : '—'}</td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="results-header">
+                    <div class="results-count">
+                        Найдено: <strong>${results.length}</strong> ${getWordForm(results.length, ['позиция', 'позиции', 'позиций'])}
+                        ${activeFilter ? ` (Раздел ${activeFilter})` : ''}
+                    </div>
+                </div>
+                <div class="results-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Код ТН ВЭД</th>
+                                <th>Наименование позиции</th>
+                                <th>Классификация</th>
+                                <th style="width: 80px;">Ед. изм.</th>
+                                <th style="width: 80px;">Ставка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ===== СКЛОНЕНИЕ СЛОВ =====
+        function getWordForm(number, forms) {
+            const n = Math.abs(number) % 100;
+            const n1 = n % 10;
+            if (n > 10 && n < 20) return forms[2];
+            if (n1 > 1 && n1 < 5) return forms[1];
+            if (n1 === 1) return forms[0];
+            return forms[2];
+        }
+
+        // ===== ОБРАБОТЧИКИ =====
+        const searchInput = document.getElementById('searchInput');
+        let timeoutId;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                if (isDatabaseLoaded) {
+                    performSearch(e.target.value);
+                }
+            }, 300);
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            if (isDatabaseLoaded) {
+                performSearch(searchInput.value);
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(searchInput.value);
+            }
+        });
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDatabase();
+        });
+    </script>
+
+</body>
+</html>
